@@ -28,9 +28,15 @@ const progress = document.querySelector(".progress-track");
 const progressBar = document.querySelector("#progressBar");
 const storageNotice = document.querySelector("#storageNotice");
 const filterButtons = document.querySelectorAll("[data-filter]");
+const deleteDialog = document.querySelector("#deleteDialog");
+const deleteDialogDescription = document.querySelector("#deleteDialogDescription");
+const cancelDeleteButton = document.querySelector("#cancelDelete");
+const confirmDeleteButton = document.querySelector("#confirmDelete");
 
 let todos = loadTodos();
 let currentFilter = FILTERS.all;
+let pendingDeleteId = null;
+let deleteTrigger = null;
 
 function loadTodos() {
   let savedTodos;
@@ -160,6 +166,7 @@ function getVisibleTodos() {
 function createTodoElement(todo) {
   const item = document.createElement("li");
   item.className = "list-group-item todo-item";
+  item.dataset.todoId = todo.id;
   item.classList.toggle("is-completed", todo.completed);
 
   const checkbox = document.createElement("input");
@@ -168,6 +175,7 @@ function createTodoElement(todo) {
   checkbox.checked = todo.completed;
   checkbox.setAttribute("aria-label", `${todo.text} 완료 여부`);
   checkbox.addEventListener("change", () => {
+    const wasCompleted = todo.completed;
     todos = todos.map((currentTodo) =>
       currentTodo.id === todo.id
         ? { ...currentTodo, completed: checkbox.checked }
@@ -175,6 +183,14 @@ function createTodoElement(todo) {
     );
     saveTodos();
     render();
+    if (checkbox.checked && !wasCompleted) {
+      const updatedItem = Array.from(todoList.children).find(
+        (currentItem) => currentItem.dataset.todoId === todo.id
+      );
+      if (updatedItem) {
+        showConfetti(updatedItem);
+      }
+    }
   });
 
   const text = document.createElement("span");
@@ -215,9 +231,7 @@ function createTodoElement(todo) {
   deleteButton.textContent = "삭제";
   deleteButton.setAttribute("aria-label", `${todo.text} 삭제`);
   deleteButton.addEventListener("click", () => {
-    todos = todos.filter((currentTodo) => currentTodo.id !== todo.id);
-    saveTodos();
-    render();
+    openDeleteDialog(todo, deleteButton);
   });
 
   const content = document.createElement("div");
@@ -227,6 +241,70 @@ function createTodoElement(todo) {
   item.append(checkbox, content, deleteButton);
   return item;
 }
+
+function showConfetti(item) {
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
+
+  const colors = ["#5269db", "#f2b84b", "#55a88a", "#ef8294", "#6bbbd0"];
+  for (let index = 0; index < 16; index += 1) {
+    const particle = document.createElement("span");
+    const angle = (Math.PI * 2 * index) / 16 + Math.random() * 0.3;
+    const distance = 35 + Math.random() * 55;
+    particle.className = "confetti-particle";
+    particle.setAttribute("aria-hidden", "true");
+    particle.style.setProperty("--particle-x", `${Math.cos(angle) * distance}px`);
+    particle.style.setProperty("--particle-y", `${Math.sin(angle) * distance}px`);
+    particle.style.setProperty("--particle-rotation", `${Math.random() * 540 - 270}deg`);
+    particle.style.setProperty("--particle-color", colors[index % colors.length]);
+    particle.style.setProperty("--particle-size", `${5 + Math.random() * 5}px`);
+    particle.style.setProperty("--particle-delay", `${Math.random() * 80}ms`);
+    item.append(particle);
+    particle.addEventListener("animationend", () => particle.remove(), { once: true });
+  }
+}
+
+function openDeleteDialog(todo, trigger) {
+  pendingDeleteId = todo.id;
+  deleteTrigger = trigger;
+  deleteDialogDescription.textContent = todo.text;
+  deleteDialog.showModal();
+}
+
+function closeDeleteDialog() {
+  if (deleteDialog.open) {
+    deleteDialog.close();
+  }
+}
+
+cancelDeleteButton.addEventListener("click", closeDeleteDialog);
+
+confirmDeleteButton.addEventListener("click", () => {
+  if (pendingDeleteId === null) {
+    closeDeleteDialog();
+    return;
+  }
+
+  const todoExists = todos.some((todo) => todo.id === pendingDeleteId);
+  if (todoExists) {
+    todos = todos.filter((todo) => todo.id !== pendingDeleteId);
+    saveTodos();
+    render();
+  }
+
+  closeDeleteDialog();
+});
+
+deleteDialog.addEventListener("close", () => {
+  pendingDeleteId = null;
+  if (deleteTrigger?.isConnected) {
+    deleteTrigger.focus();
+  } else {
+    input.focus();
+  }
+  deleteTrigger = null;
+});
 
 function render() {
   const visibleTodos = getVisibleTodos();

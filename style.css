@@ -124,6 +124,7 @@ body {
 }
 
 .todo-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.85rem;
@@ -219,6 +220,108 @@ body {
   font-size: 0.95rem;
 }
 
+.confetti-particle {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  width: var(--particle-size, 0.5rem);
+  height: calc(var(--particle-size, 0.5rem) * 0.65);
+  border-radius: 2px;
+  background: var(--particle-color);
+  pointer-events: none;
+  animation: confetti-burst 850ms cubic-bezier(0.15, 0.75, 0.3, 1) var(--particle-delay, 0ms) both;
+}
+
+@keyframes confetti-burst {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(0deg) scale(0.7);
+  }
+
+  75% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--particle-x)), calc(-50% + var(--particle-y)))
+      rotate(var(--particle-rotation)) scale(1);
+  }
+}
+
+.delete-dialog {
+  width: min(27rem, calc(100% - 2rem));
+  max-width: none;
+  padding: 0;
+  overflow: visible;
+  border: 1px solid #e8e4e1;
+  border-radius: 1.25rem;
+  background: #fffdfa;
+  color: var(--app-ink);
+  box-shadow: 0 1.5rem 5rem rgb(23 35 59 / 24%);
+}
+
+.delete-dialog::backdrop {
+  background: rgb(24 29 42 / 55%);
+  backdrop-filter: blur(3px);
+}
+
+.delete-dialog-content {
+  padding: 1.75rem;
+  text-align: center;
+}
+
+.delete-dialog-icon {
+  width: 5.25rem;
+  height: 5.25rem;
+  margin: 0 auto 1rem;
+}
+
+.delete-dialog-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.delete-dialog-eyebrow {
+  margin: 0 0 0.4rem;
+  color: #8d7774;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.delete-dialog h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 750;
+}
+
+.delete-dialog-task {
+  margin: 0.85rem 0 0;
+  overflow-wrap: anywhere;
+  color: #49566a;
+  font-weight: 600;
+}
+
+.delete-dialog-hint {
+  margin: 0.45rem 0 0;
+  color: var(--app-muted);
+  font-size: 0.875rem;
+}
+
+.delete-dialog-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.delete-dialog-actions .btn {
+  min-width: 6rem;
+}
+
 @media (max-width: 575.98px) {
   .app-shell {
     padding-right: 1rem;
@@ -234,6 +337,10 @@ body {
     min-width: 0;
     flex: 1 1 0;
   }
+
+  .delete-dialog-content {
+    padding: 1.5rem 1.25rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -244,5 +351,9 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .confetti-particle {
+    display: none;
   }
 }
