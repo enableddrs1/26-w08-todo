@@ -1,0 +1,33 @@
+.filter-button {
+  color: #94a3b8;
+}
+
+.filter-button:hover {
+  color: #e2e8f0;
+}
+
+.filter-button[aria-pressed="true"] {
+  background: #164e63;
+  color: #a5f3fc;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+}
+
+.filter-button:focus-visible,
+.task-delete:focus-visible,
+.task-checkbox:focus-visible {
+  outline: 2px solid #67e8f9;
+  outline-offset: 2px;
+}
+
+.task-text {
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
